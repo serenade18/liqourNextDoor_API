@@ -108,6 +108,15 @@ DATABASES = {
     }
 }
 
+# email verification
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'dev.shalompoultry@gmail.com'
+EMAIL_HOST_PASSWORD = 'jtuz zvje qgmx tnsc'
+EMAIL_USE_TLS = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
