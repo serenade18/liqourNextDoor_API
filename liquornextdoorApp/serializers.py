@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
+from liquornextdoorApp.models import UserLocation
+
 User = get_user_model()
 
 
@@ -33,3 +35,10 @@ class UserAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'name', 'phone', 'user_type', 'is_active', 'is_staff', 'is_admin', 'is_bar', 'is_liquor_store', 'date_joined']
+
+
+class UserLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserLocation
+        fields = ['id', 'user', 'latitude', 'longitude', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']

@@ -1,6 +1,7 @@
 import random
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
@@ -13,8 +14,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from liquornextdoorApp.models import UserAccount, OTP
+from liquornextdoorApp.models import UserAccount, OTP, UserLocation
 from liquornextdoorApp.serializers import UserAccountSerializer, UserCreateSerializer, CustomUserSerializer
+
+User = get_user_model()
 
 
 # Create your views here.
@@ -204,7 +207,7 @@ class AdminUserViewSet(viewsets.ViewSet):
         # Activate the user and set them as admin
         try:
             user = UserAccount.objects.get(email=email)
-            user.is_superuser= True
+            user.is_superuser = True
             user.is_active = True
             user.is_staff = True
             user.user_type = 'admin'
@@ -291,11 +294,17 @@ class BarUserViewSet(viewsets.ViewSet):
 
             # Set the user as inactive
             serializer.validated_data['is_active'] = False
-            serializer.save()
+            user = serializer.save()
 
             # Save OTP and email in session
             request.session['otp'] = otp
             request.session['email'] = email
+
+            # Capture the latitude and longitude if provided
+            latitude = request.data.get('latitude')
+            longitude = request.data.get('longitude')
+            if latitude and longitude:
+                UserLocation.objects.create(user=user, latitude=latitude, longitude=longitude)
 
             return Response({'message': 'OTP sent to email'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -401,11 +410,17 @@ class LiquorStoreUserViewSet(viewsets.ViewSet):
 
             # Set the user as inactive
             serializer.validated_data['is_active'] = False
-            serializer.save()
+            user = serializer.save()
 
             # Save OTP and email in session
             request.session['otp'] = otp
             request.session['email'] = email
+
+            # Capture the latitude and longitude if provided
+            latitude = request.data.get('latitude')
+            longitude = request.data.get('longitude')
+            if latitude and longitude:
+                UserLocation.objects.create(user=user, latitude=latitude, longitude=longitude)
 
             return Response({'message': 'OTP sent to email'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -474,3 +489,7 @@ class LiquorStoreUserViewSet(viewsets.ViewSet):
         user = UserAccount.objects.get(pk=pk)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class LocationViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]

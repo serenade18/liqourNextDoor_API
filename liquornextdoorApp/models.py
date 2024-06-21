@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
@@ -107,3 +108,14 @@ class OTP(models.Model):
     def is_valid(self):
         return timezone.now() < self.created_at + timedelta(minutes=10)  # OTP valid for 10 minutes
 
+
+class UserLocation(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='location')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+
+    def __str__(self):
+        return f'{self.user.email} - ({self.latitude}, {self.longitude})'
